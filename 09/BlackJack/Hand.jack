@@ -1,0 +1,121 @@
+class Hand {
+    field int num_cards;
+    field int hand_value;
+    field int base_location;
+    field int num_aces;
+    field Array hand;
+    static int CARD_SPACING;
+    
+constructor Hand new(boolean is_dealer) {
+    var int i;
+    let num_cards = 0;
+    let hand_value = 0;
+    let num_aces = 0; 
+    let hand = Array.new(5);
+    let CARD_SPACING = 5;
+            // Initialize all array elements to null
+        
+    let i = 0;
+    while (i < 5) {
+        let hand[i] = null;
+        let i = i + 1;
+    }
+    
+    if (is_dealer) {
+        let base_location = 16384 + (20 * 32);
+    } else {
+        let base_location = 16384 + (140 * 32);
+    }
+    return this;
+}
+    method void dispose() {
+        var int i;
+        var Card current_card;
+        let i = 0;
+        while (i < num_cards) {
+            if (~(hand[i] = null)) {
+                let current_card = hand[i];  // Check if card exists
+                do current_card.dispose();
+            }
+            let i = i + 1;
+        }
+        do hand.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+method int get_num_cards(){
+    return num_cards;
+}
+method int get_hand_value(){
+    return hand_value;
+}
+    method void add_card(boolean is_face_up) {
+        var Card card;
+        var int location, card_value;
+        let card = Card.new();
+        let hand[num_cards] = card;
+        
+        // Get and add card value
+        let card_value = card.get_value();
+        let hand_value = hand_value + card_value;
+        
+        
+        // Calculate card position and draw
+        let location = base_location + (num_cards * CARD_SPACING);
+        do Output.moveCursor(20, 50);
+        if ((location > 16383) & (location < 24000)) {
+            if (is_face_up) {
+                do Card.drawCard(location, card.get_value(), card.get_suit());
+                do Output.printString("Hand: ");
+                do Output.printInt(hand_value);
+            } else {
+                do Card.drawCardBack(location);
+            }
+        }
+        
+        let num_cards = num_cards + 1;
+        do Output.moveCursor(11, 10);
+        return;
+    }
+method void expose_cards() {
+    var int i;
+    var Card current_card;
+    var int location;
+    
+    let i = 0;
+    while (i < num_cards) {
+        let location = base_location + (i * CARD_SPACING);
+        let current_card = hand[i];
+        do Card.erase(location);  // First erase the back card
+        do Sys.wait(50);
+        do Card.drawCard(location, current_card.get_value(), current_card.get_suit());
+        let i = i + 1;
+        do Sys.wait(500);
+        do Output.moveCursor(5,40);
+        do Output.printString("Dille's hand: ");
+        do Output.printInt(hand_value);
+
+        
+    }
+    return;
+}
+method int cpu_play(){
+    while(hand_value<15){
+        do add_card(false);
+    }
+    return hand_value;
+}
+   method void erase() {
+        var int i;
+        var int location;
+        
+        let i = 0;
+        while (i < num_cards) {
+            let location = base_location + (i * CARD_SPACING);
+            do Card.erase(location);
+            do Sys.wait(100);
+            let i = i + 1;
+        }
+        return;
+    }
+}

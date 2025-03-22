@@ -1,0 +1,500 @@
+class Card {
+    field int value;
+    field int suit;
+    static int seed;
+    static int CARD_WIDTH;    
+    static int CARD_HEIGHT;
+    static int VALUE_OFFSET;   
+    static int SUIT_OFFSET;   
+    static int WORD_WIDTH; 
+    
+    constructor Card new() {
+        let CARD_WIDTH = 64;     // Increased from 48
+        let CARD_HEIGHT = 96;    // Increased from 64
+        let VALUE_OFFSET = 55;   // Adjusted for larger card
+        let SUIT_OFFSET = 25;    // Adjusted for larger card
+        let WORD_WIDTH = 5;      // Increased for larger card width
+        
+        // Update seed before each random call
+        do Card.initRandom();
+        let value = Card.randRange(13) + 1;
+        let seed = seed * 31;  // Change seed between calls
+        let suit = Card.randRange(4) + 1;
+        
+        
+        return this;
+    }
+    
+    function void safePoke(int address, int val) {
+        // Only write if address is within screen memory
+        if ((address > 16383) & (address < 24000)) {
+            do Memory.poke(address, val);
+        }
+        return;
+    }
+    function int getMemoryAddress(int x, int y) {
+        return 16384 + Math.multiply(y,32) + Math.divide(x,16);
+    }
+
+    // Random number generation
+    function void initRandom() {
+        if (seed = 0) { // Only initialize once
+            let seed = 7181;
+        }
+        return;
+    }
+
+    function int randRange(int range) {
+        var int result;
+        
+        // Update seed with more complex calculation
+        let seed = seed + 8121;
+        let seed = seed * 13;
+        let seed = seed + 47;
+        
+        if (seed < 0) {
+            let seed = -seed;  // Make positive if negative
+        }
+        
+        // Simpler modulo calculation that should work better
+        let result = seed;
+        while (result > (range - 1)) {
+            let result = result - range;
+        }
+        
+        
+        return result;
+    }
+
+method int get_value() {
+    if (value = 1) {  // Ace
+        return 11;    
+    }
+    if (value > 10) {
+        return 10;
+    }
+    return value;
+}
+    
+    method int get_suit() {
+        return suit;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    // Erases a card at the given location
+    function void erase(int location) {
+        var int i, j, address;
+        let i = 0;
+        
+        while (i < CARD_HEIGHT) {
+            let j = 0;
+            while (j < ((CARD_WIDTH / 16) + 1)) {
+                let address = location + (i * 32) + j;
+                do Card.safePoke(address, 0);
+                let j = j + 1;
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+
+    // Main drawing functions for card front and back
+   function void drawCard(int location, int val, int su) {
+    var int valuePos;
+    var int suitPos;
+        
+        if ((location < 16384) | (location > 24000)) {
+            return;
+        }
+        
+        do Card.drawFrame(location);
+        
+        
+        let valuePos = location + (VALUE_OFFSET * 32);
+        let suitPos = location + (SUIT_OFFSET * 32);
+        
+        if ((valuePos > 16383) & (valuePos < 24000)) {
+            do Card.drawValue(valuePos, val);
+        }
+        
+        if ((suitPos > 16383) & (suitPos < 24000)) {
+            do Card.drawSuit(suitPos, su);
+        }
+        return;
+    }
+
+function void drawValue(int location, int val) {
+        if (val = 1) { do Card.drawA(location); }        // Ace
+        if (val = 2) { do Card.draw2(location); }
+        if (val = 3) { do Card.draw3(location); }
+        if (val = 4) { do Card.draw4(location); }
+        if (val = 5) { do Card.draw5(location); }
+        if (val = 6) { do Card.draw6(location); }
+        if (val = 7) { do Card.draw7(location); }
+        if (val = 8) { do Card.draw8(location); }
+        if (val = 9) { do Card.draw9(location); }
+        if (val = 10) { do Card.draw10(location); }
+        if (val = 11) { do Card.drawJ(location); }      // Jack
+        if (val = 12) { do Card.drawQ(location); }      // Queen
+        if (val = 13) { do Card.drawK(location); }      // King
+        return;
+    }
+
+function void drawPattern(int location, Array pattern, int height) {
+    var int i, addr;
+    let i = 0;
+    
+    if ((location < 16384) | (location > 24000)) {
+        return;
+    }
+    
+    while (i < height) {
+        let addr = location + (i * 32);
+        
+        // Changed offset from +1 to +2 to center the pattern,
+        // Using bit shift to correct mirroring
+        if ((addr > 16383) & (addr < 23900)) {
+            do Memory.poke(addr + 2, pattern[i] * 4);  // Shift 2 bits left to center
+        }
+        let i = i + 1;
+    }
+    return;
+}
+
+    // Draws card frame
+    function void drawFrame(int location) {
+        var int i;
+        
+        // Draw horizontal borders - make them 4 words wide
+        let i = 0;
+        while (i < WORD_WIDTH) {
+            // Top border
+            do Card.safePoke(location + i, 32767);
+            do Card.safePoke(location + 32 + i, 32767);
+            // Bottom border
+            do Card.safePoke(location + ((CARD_HEIGHT - 1) * 32) + i, 32767);
+            do Card.safePoke(location + ((CARD_HEIGHT - 2) * 32) + i, 32767);
+            let i = i + 1;
+        }
+        
+        // Draw vertical borders
+        let i = 0;
+        while (i < CARD_HEIGHT) {
+            // Left border
+            do Card.safePoke(location + (i * 32), 16384);
+            // Right border
+            do Card.safePoke(location + (i * 32) + (WORD_WIDTH - 1), 1);
+            let i = i + 1;
+        }
+        return;
+    }
+   function void drawSuit(int location, int su) {
+        if (su = 1) { do Card.drawHeart(location); }
+        if (su = 2) { do Card.drawDiamond(location); }
+        if (su = 3) { do Card.drawClub(location); }
+        if (su = 4) { do Card.drawSpade(location); }
+        return;
+    }
+
+     // Numbers and Face Cards
+    function void drawA(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 1984;   // 0000011111000000
+        let pattern[1] = 4064;   // 0000111111100000
+        let pattern[2] = 7800;   // 0001111001110000
+        let pattern[3] = 7224;   // 0001110001110000
+        let pattern[4] = 7224;   // 0001110001110000
+        let pattern[5] = 16382;  // 0011111111110000
+        let pattern[6] = 14342;  // 0011100001110000
+        let pattern[7] = 14342;  // 0011100001110000
+        let pattern[8] = 14342;  // 0011100001110000
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+    function void draw2(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 4064;   // 0000111111100000
+        let pattern[1] = 7736;   // 0001111000111000
+        let pattern[2] = 7224;   // 0001110001110000
+        let pattern[3] = 56;     // 0000000001110000
+        let pattern[4] = 240;    // 0000000011110000
+        let pattern[5] = 992;    // 0000001111100000
+        let pattern[6] = 3968;   // 0000111111000000
+        let pattern[7] = 16128;  // 0011111100000000
+        let pattern[8] = 16382;  // 0011111111110000
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+    function void draw3(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 4064;   // 0000111111100000
+        let pattern[1] = 7736;   // 0001111000111000
+        let pattern[2] = 56;     // 0000000001110000
+        let pattern[3] = 56;     // 0000000001110000
+        let pattern[4] = 1008;   // 0000001111110000
+        let pattern[5] = 56;     // 0000000001110000
+        let pattern[6] = 7224;   // 0001110001110000
+        let pattern[7] = 7736;   // 0001111000111000
+        let pattern[8] = 4064;   // 0000111111100000
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+    function void draw4(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 7224;   // 0001110001110000
+        let pattern[1] = 7224;   // 0001110001110000
+        let pattern[2] = 7224;   // 0001110001110000
+        let pattern[3] = 7224;   // 0001110001110000
+        let pattern[4] = 16382;  // 0011111111110000
+        let pattern[5] = 56;     // 0000000001110000
+        let pattern[6] = 56;     // 0000000001110000
+        let pattern[7] = 56;     // 0000000001110000
+        let pattern[8] = 56;     // 0000000001110000
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+    function void draw5(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 16382;  // 0011111111110000
+        let pattern[1] = 16128;  // 0011111100000000
+        let pattern[2] = 16128;  // 0011111100000000
+        let pattern[3] = 16128;  // 0011111100000000
+        let pattern[4] = 16376;  // 0011111111100000
+        let pattern[5] = 30;     // 0000000001111000
+        let pattern[6] = 7224;   // 0001110001110000
+        let pattern[7] = 7736;   // 0001111000111000
+        let pattern[8] = 4064;   // 0000111111100000
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+    function void draw6(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 4064;   // 0000111111100000
+        let pattern[1] = 7736;   // 0001111000111000
+        let pattern[2] = 16128;  // 0011111100000000
+        let pattern[3] = 16128;  // 0011111100000000
+        let pattern[4] = 16376;  // 0011111111100000
+        let pattern[5] = 14344;  // 0011100001111000
+        let pattern[6] = 7224;   // 0001110001110000
+        let pattern[7] = 7736;   // 0001111000111000
+        let pattern[8] = 4064;   // 0000111111100000
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+    function void draw7(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 16382;  // 0011111111110000
+        let pattern[1] = 56;     // 0000000001110000
+        let pattern[2] = 112;    // 0000000011100000
+        let pattern[3] = 224;    // 0000000111000000
+        let pattern[4] = 448;    // 0000001110000000
+        let pattern[5] = 896;    // 0000011100000000
+        let pattern[6] = 1792;   // 0000111000000000
+        let pattern[7] = 3584;   // 0001110000000000
+        let pattern[8] = 7168;   // 0011100000000000
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+    function void draw8(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 4064;   // 0000111111100000
+        let pattern[1] = 7736;   // 0001111000111000
+        let pattern[2] = 7224;   // 0001110001110000
+        let pattern[3] = 7736;   // 0001111000111000
+        let pattern[4] = 4064;   // 0000111111100000
+        let pattern[5] = 7736;   // 0001111000111000
+        let pattern[6] = 7224;   // 0001110001110000
+        let pattern[7] = 7736;   // 0001111000111000
+        let pattern[8] = 4064;   // 0000111111100000
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+    function void draw9(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 4064;   // 0000111111100000
+        let pattern[1] = 7736;   // 0001111000111000
+        let pattern[2] = 7224;   // 0001110001110000
+        let pattern[3] = 7224;   // 0001110001110000
+        let pattern[4] = 4088;   // 0000111111111000
+        let pattern[5] = 56;     // 0000000001110000
+        let pattern[6] = 7224;   // 0001110001110000
+        let pattern[7] = 7736;   // 0001111000111000
+        let pattern[8] = 4064;   // 0000111111100000
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+    function void draw10(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 7736;   // 0001111000111000
+        let pattern[1] = 7736;   // 0001111000111000
+        let pattern[2] = 7736;   // 0001111000111000
+        let pattern[3] = 7736;   // 0001111000111000
+        let pattern[4] = 7736;   // 0001111000111000
+        let pattern[5] = 7736;   // 0001111000111000
+        let pattern[6] = 7736;   // 0001111000111000
+        let pattern[7] = 7736;   // 0001111000111000
+        let pattern[8] = 4064;   // 0000111111100000
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+    function void drawJ(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 16382;  // 0011111111110000
+        let pattern[1] = 448;    // 0000001110000000
+        let pattern[2] = 448;    // 0000001110000000
+        let pattern[3] = 448;    // 0000001110000000
+        let pattern[4] = 448;    // 0000001110000000
+        let pattern[5] = 448;    // 0000001110000000
+        let pattern[6] = 7224;   // 0001110001110000
+        let pattern[7] = 7736;   // 0001111000111000
+        let pattern[8] = 4064;   // 0000111111100000
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+    function void drawQ(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 4064;   // 0000111111100000
+        let pattern[1] = 7736;   // 0001111000111000
+        let pattern[2] = 7224;   // 0001110001110000
+        let pattern[3] = 7224;   // 0001110001110000
+        let pattern[4] = 7224;   // 0001110001110000
+        let pattern[5] = 7480;   // 0001110101111000
+        let pattern[6] = 7352;   // 0001110011111000
+        let pattern[7] = 7736;   // 0001111000111000
+        let pattern[8] = 4094;   // 0000111111111100
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+    function void drawK(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 7224;   // 0001110001110000
+        let pattern[1] = 7352;   // 0001110011100000
+        let pattern[2] = 7608;   // 0001110111000000
+        let pattern[3] = 8064;   // 0001111110000000
+        let pattern[4] = 8064;   // 0001111110000000
+        let pattern[5] = 7608;   // 0001110111000000
+        let pattern[6] = 7352;   // 0001110011100000
+        let pattern[7] = 7224;   // 0001110001110000
+        let pattern[8] = 7224;   // 0001110001110000
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+    // Suit patterns
+    function void drawHeart(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 3640;   // 0000111000111000
+        let pattern[1] = 8190;   // 0001111111111000
+        let pattern[2] = 16382;  // 0011111111110000
+        let pattern[3] = 16382;  // 0011111111110000
+        let pattern[4] = 16382;  // 0011111111110000
+        let pattern[5] = 8188;   // 0001111111110000
+        let pattern[6] = 4088;   // 0000111111110000
+        let pattern[7] = 2032;   // 0000011111100000
+        let pattern[8] = 992;    // 0000001111100000
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+    function void drawDiamond(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 896;    // 0000001110000000
+        let pattern[1] = 2032;   // 0000011111100000
+        let pattern[2] = 4088;   // 0000111111110000
+        let pattern[3] = 8188;   // 0001111111110000
+        let pattern[4] = 16382;  // 0011111111110000
+        let pattern[5] = 8188;   // 0001111111110000
+        let pattern[6] = 4088;   // 0000111111110000
+        let pattern[7] = 2032;   // 0000011111100000
+        let pattern[8] = 896;    // 0000001110000000
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+    function void drawClub(int location) {
+        var Array pattern;
+        let pattern = Array.new(9);
+        let pattern[0] = 2032;   // 0000011111100000
+        let pattern[1] = 2032;   // 0000011111100000
+        let pattern[2] = 2032;   // 0000011111100000
+        let pattern[3] = 896;    // 0000001110000000
+        let pattern[4] = 3640;   // 0000111000111000
+        let pattern[5] = 896;    // 0000001110000000
+        let pattern[6] = 2032;   // 0000011111100000
+        let pattern[7] = 2032;   // 0000011111100000
+        let pattern[8] = 896;    // 0000001110000000
+        do Card.drawPattern(location, pattern, 9);
+        return;
+    }
+
+function void drawSpade(int location) {
+    var Array pattern;
+    let pattern = Array.new(9);
+    let pattern[0] = 896;    // 0000001110000000
+    let pattern[1] = 2032;   // 0000011111100000
+    let pattern[2] = 4088;   // 0000111111110000
+    let pattern[3] = 8188;   // 0001111111110000
+    let pattern[4] = 16382;  // 0011111111110000
+    let pattern[5] = 16382;  // 0011111111110000
+    let pattern[6] = 2032;   // 0000011111100000
+    let pattern[7] = 4064;   // 0000111111000000
+    let pattern[8] = 2032;   // 0000011111100000
+    do Card.drawPattern(location, pattern, 9);
+    return;
+}
+    function void drawCardBack(int location) {
+        var int i;
+        do Card.drawFrame(location);
+        
+        // Fill pattern - 4 words wide to match frame
+        let i = 2;
+        while (i < (CARD_HEIGHT - 2)) {
+            if ((i & 1) = 0) {
+                do Card.safePoke(location + (i * 32) + 1, 21845);
+                do Card.safePoke(location + (i * 32) + 2, 21845);
+                do Card.safePoke(location + (i * 32) + 3, 21845);
+            } else {
+                do Card.safePoke(location + (i * 32) + 1, 10922);
+                do Card.safePoke(location + (i * 32) + 2, 10922);
+                do Card.safePoke(location + (i * 32) + 3, 10922);
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+}
+
+
+
+   

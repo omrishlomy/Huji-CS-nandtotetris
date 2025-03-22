@@ -1,0 +1,404 @@
+class Cards {
+    field int value;
+    field int suit; //1='Hearts,2=Dimonds,3=Cloves,4=Spades'
+    constructor Card new(){
+        let value = Keyboard.readInt(2,14);
+        let suit = Keyboard.readInt(1,4);
+        return this;
+    }
+    method int get_value(){
+        if (value>=10){
+            return 10;
+        }
+        else{
+            return value;
+        }
+    }
+    method int get_suit(){
+        return suit;
+    }
+    method void dispose(){
+        do Memory.deAlloc(this);
+        return;
+    }
+    function void erase(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    
+    var int i, j;
+    let i = 0;
+    
+    // For each row (80 pixels height)
+    while (i < 80) {
+        let j = 0;
+        // For each word in the row (4 words = 50 pixels width)
+        while (j < 4) {
+            do Memory.poke(memAddress + (i*32) + j, 0);  // 0 = all white pixels
+            let j = j + 1;
+        }
+        let i = i + 1;
+    }
+    return;
+    }
+
+
+    // Ace pattern adjusted
+function void drawA(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 384);    // 0000000110000000
+    do Memory.poke(memAddress+32, 384);   // 0000000110000000
+    do Memory.poke(memAddress+64, 960);   // 0000001111000000
+    do Memory.poke(memAddress+96, 816);   // 0000001100110000
+    do Memory.poke(memAddress+128, 816);  // 0000001100110000
+    do Memory.poke(memAddress+160, 2040); // 0000011111110000
+    do Memory.poke(memAddress+192, 1632); // 0000011001100000
+    do Memory.poke(memAddress+224, 1632); // 0000011001100000
+    return;
+}
+
+// 2 pattern adjusted
+function void draw2(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 2016);   // 0000011111100000
+    do Memory.poke(memAddress+32, 3120);  // 0000110001100000
+    do Memory.poke(memAddress+64, 96);    // 0000000001100000
+    do Memory.poke(memAddress+96, 192);   // 0000000011000000
+    do Memory.poke(memAddress+128, 384);  // 0000000110000000
+    do Memory.poke(memAddress+160, 768);  // 0000001100000000
+    do Memory.poke(memAddress+192, 1536); // 0000011000000000
+    do Memory.poke(memAddress+224, 4092); // 0000111111110000
+    return;
+}
+
+// 3 pattern adjusted
+function void draw3(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 2016);   // 0000011111100000
+    do Memory.poke(memAddress+32, 3120);  // 0000110001100000
+    do Memory.poke(memAddress+64, 96);    // 0000000001100000
+    do Memory.poke(memAddress+96, 896);   // 0000001110000000
+    do Memory.poke(memAddress+128, 96);   // 0000000001100000
+    do Memory.poke(memAddress+160, 96);   // 0000000001100000
+    do Memory.poke(memAddress+192, 3120); // 0000110001100000
+    do Memory.poke(memAddress+224, 2016); // 0000011111100000
+    return;
+}
+
+// 4 pattern adjusted
+function void draw4(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 96);     // 0000000001100000
+    do Memory.poke(memAddress+32, 224);   // 0000000011100000
+    do Memory.poke(memAddress+64, 480);   // 0000000111100000
+    do Memory.poke(memAddress+96, 816);   // 0000001100110000
+    do Memory.poke(memAddress+128, 1632); // 0000011001100000
+    do Memory.poke(memAddress+160, 4092); // 0000111111110000
+    do Memory.poke(memAddress+192, 96);   // 0000000001100000
+    do Memory.poke(memAddress+224, 96);   // 0000000001100000
+    return;
+}
+
+// 5 pattern adjusted
+function void draw5(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 4092);   // 0000111111110000
+    do Memory.poke(memAddress+32, 3072);  // 0000110000000000
+    do Memory.poke(memAddress+64, 3072);  // 0000110000000000
+    do Memory.poke(memAddress+96, 4032);  // 0000111111000000
+    do Memory.poke(memAddress+128, 48);   // 0000000000110000
+    do Memory.poke(memAddress+160, 24);   // 0000000000011000
+    do Memory.poke(memAddress+192, 3120); // 0000110001100000
+    do Memory.poke(memAddress+224, 2016); // 0000011111100000
+    return;
+}
+
+// 6 pattern adjusted
+function void draw6(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 2016);   // 0000011111100000
+    do Memory.poke(memAddress+32, 3120);  // 0000110001100000
+    do Memory.poke(memAddress+64, 3072);  // 0000110000000000
+    do Memory.poke(memAddress+96, 4032);  // 0000111111000000
+    do Memory.poke(memAddress+128, 3120); // 0000110001100000
+    do Memory.poke(memAddress+160, 3120); // 0000110001100000
+    do Memory.poke(memAddress+192, 3120); // 0000110001100000
+    do Memory.poke(memAddress+224, 2016); // 0000011111100000
+    return;
+}
+
+// 7 pattern adjusted
+function void draw7(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 4092);   // 0000111111110000
+    do Memory.poke(memAddress+32, 24);    // 0000000000011000
+    do Memory.poke(memAddress+64, 48);    // 0000000000110000
+    do Memory.poke(memAddress+96, 96);    // 0000000001100000
+    do Memory.poke(memAddress+128, 192);  // 0000000011000000
+    do Memory.poke(memAddress+160, 384);  // 0000000110000000
+    do Memory.poke(memAddress+192, 384);  // 0000000110000000
+    do Memory.poke(memAddress+224, 384);  // 0000000110000000
+    return;
+}
+
+// 8 pattern adjusted
+function void draw8(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 2016);   // 0000011111100000
+    do Memory.poke(memAddress+32, 3120);  // 0000110001100000
+    do Memory.poke(memAddress+64, 3120);  // 0000110001100000
+    do Memory.poke(memAddress+96, 2016);  // 0000011111100000
+    do Memory.poke(memAddress+128, 3120); // 0000110001100000
+    do Memory.poke(memAddress+160, 3120); // 0000110001100000
+    do Memory.poke(memAddress+192, 3120); // 0000110001100000
+    do Memory.poke(memAddress+224, 2016); // 0000011111100000
+    return;
+}
+
+// 9 pattern adjusted
+function void draw9(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 2016);   // 0000011111100000
+    do Memory.poke(memAddress+32, 3120);  // 0000110001100000
+    do Memory.poke(memAddress+64, 3120);  // 0000110001100000
+    do Memory.poke(memAddress+96, 2040);  // 0000011111110000
+    do Memory.poke(memAddress+128, 24);   // 0000000000011000
+    do Memory.poke(memAddress+160, 48);   // 0000000000110000
+    do Memory.poke(memAddress+192, 3120); // 0000110001100000
+    do Memory.poke(memAddress+224, 2016); // 0000011111100000
+    return;
+}
+
+// 10 pattern adjusted
+function void draw10(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 3120);   // 0000110001100000
+    do Memory.poke(memAddress+32, 3120);  // 0000110001100000
+    do Memory.poke(memAddress+64, 3120);  // 0000110001100000
+    do Memory.poke(memAddress+96, 3120);  // 0000110001100000
+    do Memory.poke(memAddress+128, 3120); // 0000110001100000
+    do Memory.poke(memAddress+160, 3120); // 0000110001100000
+    do Memory.poke(memAddress+192, 3120); // 0000110001100000
+    do Memory.poke(memAddress+224, 2016); // 0000011111100000
+    return;
+}
+
+// Jack pattern adjusted
+function void drawJ(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 4092);   // 0000111111110000
+    do Memory.poke(memAddress+32, 384);   // 0000000110000000
+    do Memory.poke(memAddress+64, 384);   // 0000000110000000
+    do Memory.poke(memAddress+96, 384);   // 0000000110000000
+    do Memory.poke(memAddress+128, 384);  // 0000000110000000
+    do Memory.poke(memAddress+160, 384);  // 0000000110000000
+    do Memory.poke(memAddress+192, 3120); // 0000110001100000
+    do Memory.poke(memAddress+224, 2016); // 0000011111100000
+    return;
+}
+
+// Queen pattern adjusted
+function void drawQ(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 2016);   // 0000011111100000
+    do Memory.poke(memAddress+32, 3120);  // 0000110001100000
+    do Memory.poke(memAddress+64, 3120);  // 0000110001100000
+    do Memory.poke(memAddress+96, 3120);  // 0000110001100000
+    do Memory.poke(memAddress+128, 3120); // 0000110001100000
+    do Memory.poke(memAddress+160, 3120); // 0000110001100000
+    do Memory.poke(memAddress+192, 2040); // 0000011111110000
+    do Memory.poke(memAddress+224, 24);   // 0000000000011000
+    return;
+}
+
+// King pattern adjusted
+function void drawK(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 3120);   // 0000110001100000
+    do Memory.poke(memAddress+32, 3264);  // 0000110011000000
+    do Memory.poke(memAddress+64, 3840);  // 0000111100000000
+    do Memory.poke(memAddress+96, 3840);  // 0000111100000000
+    do Memory.poke(memAddress+128, 3264); // 0000110011000000
+    do Memory.poke(memAddress+160, 3120); // 0000110001100000
+    do Memory.poke(memAddress+192, 3120); // 0000110001100000
+    do Memory.poke(memAddress+224, 3120); // 0000110001100000
+    return;
+}
+
+// Heart suit adjusted
+function void drawHeart(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 1632);   // 0000011001100000
+    do Memory.poke(memAddress+32, 3960);  // 0000111101110000
+    do Memory.poke(memAddress+64, 4092);  // 0000111111110000
+    do Memory.poke(memAddress+96, 4092);  // 0000111111110000
+    do Memory.poke(memAddress+128, 2016); // 0000011111100000
+    do Memory.poke(memAddress+160, 960);  // 0000001111000000
+    do Memory.poke(memAddress+192, 384);  // 0000000110000000
+    return;
+}
+
+// Diamond suit adjusted
+function void drawDiamond(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 384);    // 0000000110000000
+    do Memory.poke(memAddress+32, 960);   // 0000001111000000
+    do Memory.poke(memAddress+64, 2016);  // 0000011111100000
+    do Memory.poke(memAddress+96, 4092);  // 0000111111110000
+    do Memory.poke(memAddress+128, 2016); // 0000011111100000
+    do Memory.poke(memAddress+160, 960);  // 0000001111000000
+    do Memory.poke(memAddress+192, 384);  // 0000000110000000
+    return;
+}
+
+// Club suit adjusted
+function void drawClub(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 384);    // 0000000110000000
+    do Memory.poke(memAddress+32, 960);   // 0000001111000000
+    do Memory.poke(memAddress+64, 960);   // 0000001111000000
+    do Memory.poke(memAddress+96, 384);   // 0000000110000000
+    do Memory.poke(memAddress+128, 1632); // 0000011001100000
+    do Memory.poke(memAddress+160, 960);  // 0000001111000000
+    do Memory.poke(memAddress+192, 384);  // 0000000110000000
+    return;
+}
+function void drawSpade(int location) {
+    var int memAddress;
+    let memAddress = 16384+location;
+    do Memory.poke(memAddress+0, 384);    // 0000000110000000
+    do Memory.poke(memAddress+32, 960);   // 0000001111000000
+    do Memory.poke(memAddress+64, 2016);  // 0000011111100000
+    do Memory.poke(memAddress+96, 4092);  // 0000111111110000
+    do Memory.poke(memAddress+128, 4092); // 0000111111110000
+    do Memory.poke(memAddress+160, 384);  // 0000000110000000
+    do Memory.poke(memAddress+192, 384);  // 0000000110000000
+    return;
+}
+
+
+// Card drawing method adjusted for 50x80 size
+function void drawCard(int location, int value, int suit) {
+    var int memAddress, centerOffset;
+    let memAddress = 16384+location;
+    
+    // Draw frame borders (50x80)
+    var int i;
+    let i = 0;
+    while (i < 4) {  // 4 words = 64 pixels wide (covering our 50px width)
+        // Top border
+        do Memory.poke(memAddress+(i), -1);
+        do Memory.poke(memAddress+32+(i), -1);
+        // Bottom border
+        do Memory.poke(memAddress+2528+(i), -1); // 79*32=2528 (last row)
+        do Memory.poke(memAddress+2496+(i), -1); // 78*32=2496 (second-to-last row)
+        let i = i + 1;
+    }
+    
+    // Draw side borders
+    let i = 0;
+    while (i < 80) {  // 80 pixels height
+        do Memory.poke(memAddress+(i*32), 49152);    // Left border  (1100000000000000)
+        do Memory.poke(memAddress+(i*32)+3, 3);      // Right border (0000000000000011)
+        let i = i + 1;
+    }
+    
+    // Calculate center position for 50px width card
+    let centerOffset = location + 1;  // Move one word right (16 pixels)
+    
+    // Calculate value and suit positions
+    var int valueLocation, suitLocation;
+    
+    // Value position: centered horizontally, 5 pixels from bottom
+    let valueLocation = centerOffset + (50 * 32);
+    
+    // Suit position: centered horizontally, above value
+    let suitLocation = centerOffset + (20 * 32);
+    
+    // Draw value based on input
+    if (value = 1) { do drawA(valueLocation); }
+    if (value = 2) { do draw2(valueLocation); }
+    if (value = 3) { do draw3(valueLocation); }
+    if (value = 4) { do draw4(valueLocation); }
+    if (value = 5) { do draw5(valueLocation); }
+    if (value = 6) { do draw6(valueLocation); }
+    if (value = 7) { do draw7(valueLocation); }
+    if (value = 8) { do draw8(valueLocation); }
+    if (value = 9) { do draw9(valueLocation); }
+    if (value = 10) { do draw10(valueLocation); }
+    if (value = 11) { do drawJ(valueLocation); }
+    if (value = 12) { do drawQ(valueLocation); }
+    if (value = 13) { do drawK(valueLocation); }
+    
+    // Draw suit based on input
+    if (suit = 1) { do drawHeart(suitLocation); }
+    if (suit = 2) { do drawDiamond(suitLocation); }
+    if (suit = 3) { do drawClub(suitLocation); }
+    if (suit = 4) { do drawSpade(suitLocation); }
+    
+    return;
+}
+function void drawCardBack(int location) {
+    var int memAddress, i, j;
+    let memAddress = 16384+location;
+    
+    // Draw outer frame first (same as normal card)
+    let i = 0;
+    while (i < 4) {  // 4 words = 64 pixels wide (covering our 50px width)
+        // Top border
+        do Memory.poke(memAddress+(i), -1);
+        do Memory.poke(memAddress+32+(i), -1);
+        // Bottom border
+        do Memory.poke(memAddress+2528+(i), -1); // 79*32=2528 (last row)
+        do Memory.poke(memAddress+2496+(i), -1); // 78*32=2496 (second-to-last row)
+        let i = i + 1;
+    }
+    
+    // Draw side borders
+    let i = 0;
+    while (i < 80) {  // 80 pixels height
+        do Memory.poke(memAddress+(i*32), 49152);    // Left border  (1100000000000000)
+        do Memory.poke(memAddress+(i*32)+3, 3);      // Right border (0000000000000011)
+        let i = i + 1;
+    }
+    
+    // Fill with pattern (diagonal stripes)
+    let i = 2;  // Start after top border
+    while (i < 78) {  // Stop before bottom border
+        if ((i & 3) = 0) {  // Every 4th row pattern
+            do Memory.poke(memAddress+(i*32)+1, 21845);  // 0101010101010101
+            do Memory.poke(memAddress+(i*32)+2, 21845);  // 0101010101010101
+        }
+        if ((i & 3) = 1) {  // Shifted pattern for next row
+            do Memory.poke(memAddress+(i*32)+1, -10922); // 1010101010101010
+            do Memory.poke(memAddress+(i*32)+2, -10922); // 1010101010101010
+        }
+        if ((i & 3) = 2) {  // Repeat first pattern
+            do Memory.poke(memAddress+(i*32)+1, 21845);  // 0101010101010101
+            do Memory.poke(memAddress+(i*32)+2, 21845);  // 0101010101010101
+        }
+        if ((i & 3) = 3) {  // Repeat second pattern
+            do Memory.poke(memAddress+(i*32)+1, -10922); // 1010101010101010
+            do Memory.poke(memAddress+(i*32)+2, -10922); // 1010101010101010
+        }
+        let i = i + 1;
+    }
+    return;
+}
+
+}

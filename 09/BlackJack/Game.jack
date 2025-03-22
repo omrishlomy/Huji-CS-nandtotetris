@@ -1,0 +1,104 @@
+class Game {
+    field Hand player_hand;
+    field Hand cpu_hand;
+
+    constructor Game new() {
+        let player_hand = null;
+        let cpu_hand = null;
+        
+        let cpu_hand = Hand.new(true);
+        let player_hand = Hand.new(false);
+        
+        // Deal initial cards
+        do cpu_hand.add_card(false);
+        do Sys.wait(100);
+        do cpu_hand.add_card(false);
+        do Sys.wait(100);
+        do player_hand.add_card(true);
+        do Sys.wait(100);
+        do player_hand.add_card(true);
+        return this;
+    }
+
+    method int get_hand() {    // Remove Hand parameter as it's not needed
+        return player_hand.get_hand_value();  // Use get_hand_value method from Hand class
+    }    
+
+    method void dispose() {
+        if (~(player_hand = null)) {
+            do player_hand.dispose();
+        }
+        if (~(cpu_hand = null)) {
+            do cpu_hand.dispose();
+        }
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method void hit() {
+        do player_hand.add_card(true);  // Add true for player card
+        return;
+    }
+
+    method void stay() {
+        var int cpu_hand_value;
+        let cpu_hand_value = cpu_hand.cpu_play();
+        do cpu_hand.expose_cards();
+        do Sys.wait(1000);
+        do Output.moveCursor(12, 25);
+        do Screen.clearScreen();
+        if ((cpu_hand_value > 21) | (cpu_hand_value < player_hand.get_hand_value())) {
+            do Output.printString("You Win!!");
+        }
+        else {
+            do Output.printString("You Lose!!");
+        }
+        do quit();
+        return;
+    }
+
+    method void quit() {  
+        do player_hand.erase();
+        do Sys.wait(100);
+        do cpu_hand.erase();
+        do dispose();
+        do Screen.clearScreen();
+        return;
+    }
+
+        method boolean run() {
+        var char key;
+        
+        while (true) {
+            do Output.moveCursor(11, 10);
+            do Output.printString("Enter command (h=hit, s=stay, q=quit): ");
+            let key = Keyboard.readChar();
+            do Output.println();
+            
+            if ((key = 72) | (key = 104)) {  // 'H' or 'h'
+                do hit();
+                if ((player_hand.get_hand_value() > 21)) {
+                    do Sys.wait(500);
+                    do Screen.clearScreen();
+                    do Output.printString("Bust! Dealer wins!");
+                    do Output.println();
+                    do quit();
+                    return false;  // Don't quit the whole game after bust
+                }
+            }
+            else {
+                if ((key = 83) | (key = 115)) {  // 'S' or 's'
+                    do stay();
+                    return false;  // Don't quit the whole game after stay
+                }
+                else {
+                    if ((key = 81) | (key = 113)) {  // 'Q' or 'q'
+                        do quit();
+                        return true;  // Signal to quit the whole game
+                    }
+                }
+            }
+        }
+        return false;
+    }
+}

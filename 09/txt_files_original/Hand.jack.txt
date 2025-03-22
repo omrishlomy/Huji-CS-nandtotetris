@@ -1,0 +1,66 @@
+class Hand {
+    field int num_cards;
+    field int hand_value;
+    field int location_y;
+    field array hand;
+constructor Hand new(int location_y){
+    let num_cards=0;
+    let hand_value=0;
+    return this;
+}    
+method void dispose(){
+    let int i=0;
+    while(i<num_cards){
+       do Memory.deAlloc(hand[i]);
+        let i =i+1;
+    }
+    do Memory.deAlloc(this);
+    return;
+}
+method int get_num_cards(){
+    return num_cards;
+}
+method int get_hand_value(){
+    return hand_value;
+}
+method void add_card(int is_player){
+    let card = Card();
+    do hand.append(card);
+    let num_cards = num_cards+1;
+    hand_value = hand_value+Card.value;
+    let int location = (5 + (55*num_cards)) +location_y;
+    if(is_player){
+    do Card.drawCard(location,card.value,card.suit);
+    }
+    else{
+        do Card.drawCardBack(location);
+    }
+    return;
+}
+method void expose_cards(){
+    let int i =0;
+    let int base_location = 160;
+    while(i<num_cards){
+        let location = base_location + (5+(55*i))/16;
+        do Card.draw_card(location,hand[i].value,hand[i].suit);
+        let i =i+1;
+        do Sys.wait(100);
+    }
+    return;
+}
+method int cpu_play(){
+    while(hand_value<15){
+        do add_card()
+    }
+    return hand_value;
+}
+method void erase(){
+        let int i =0;
+    while(i<num_cards){
+        do Card.erase(location);
+        do Sys.wait(100);
+        let i= i + 1;
+    }
+    return;
+}
+}

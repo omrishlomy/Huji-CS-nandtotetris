@@ -1,0 +1,11 @@
+class Main {
+    function main(){
+        do Output.printString("Welcome To BlackJack Game");
+        while(~(Keyboard.KeyPressed()=='q')){
+            let game = Game();
+            do game.run();
+        }
+        do Sys.wait(500);
+        do Output.printString("Thank you for playing");
+    }
+}

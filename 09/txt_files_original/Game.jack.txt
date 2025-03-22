@@ -1,0 +1,73 @@
+class Game {
+    field Hand player_hand;
+    field Hand cpu_hand;
+constructor Game new(){
+    let cpu_hand = Hand(160);
+    do cpu_hand.add_card();
+    do Sys.wait(100);
+    do cpu_hand.add_card();
+    do Sys.wait(100);
+    do Hand.draw_cpu();
+    let player_hand = Hand(5472);
+    do player_hand.add_card();
+    do Sys.wait(100);
+    do player_hand.add_card();
+    return this;
+
+}
+method int get_hand(Hand){
+    return Hand.hand_value;
+}    
+method void dispose(){
+    do Memory.deAlloc(player_hand);
+    do Memory.deAlloc(cpu_hand);
+    do Memory.deAlloc(this);
+}
+method void hit(){
+    do player_hand.add_card();
+}
+method void stay(){
+    let cpu_hand_value = cpu_hand.cpu_play();
+    do cpu_hand.expose_cards();
+    do Sys.wait(400);
+    if(cpu_hand_value >21 || cpu_hand_value < player_hand.get_hand()){
+        Output.printString("You Win!!");
+    }
+    else{
+        Output.printString("You Lose!!");
+    }
+    
+}
+method void quit(){  
+    do player_hand.erase();
+    Sys.wait(100);
+    do cpu_hand.erase();
+    do dispose();
+
+}
+method void run(){
+    let game = Game();
+    
+    while (true){
+        let key = Keyboard.reaChar("press h for hit, s for stay, q for quit follows by ENTER");
+    }
+    if (key=='h' || key== 'H'){ //pressed 'h' or 'H' - hit
+        do player_hand.add_card();
+        if(player_hand.hand_value>21){
+            let winner=0;
+            Output.printString("Diller takes it all");
+            do quit();
+            return;
+        }
+    }
+    else if(key=='s' || key=='S'){
+        do Sys.wait(100);
+        do stay();
+        do quit();
+        return;
+    }
+    else if(key=='q' || key=='Q'){
+        do quit();
+    }
+}
+}

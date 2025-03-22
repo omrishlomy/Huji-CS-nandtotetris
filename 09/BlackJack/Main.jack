@@ -1,0 +1,22 @@
+class Main {
+    function void main() {
+        var Game game;
+        var char key;
+        var boolean quit_game;
+        
+        let quit_game = false;
+        do Output.printString("Welcome To BlackJack Game");
+        do Sys.wait(1000);
+        do Screen.clearScreen();
+        
+        while (~quit_game) {
+            let game = Game.new();
+            let quit_game = game.run();  
+            do game.dispose();
+            do Screen.clearScreen();
+        }
+        do Output.moveCursor(10, 10);
+        do Output.printString("Thank you for playing");
+        return;
+    }
+}

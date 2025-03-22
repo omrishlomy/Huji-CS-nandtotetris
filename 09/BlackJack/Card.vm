@@ -1,0 +1,2086 @@
+function Card.new 0
+push constant 2
+call Memory.alloc 1
+pop pointer 0
+push constant 64
+pop static 1
+push constant 96
+pop static 2
+push constant 55
+pop static 3
+push constant 25
+pop static 4
+push constant 5
+pop static 5
+call Card.initRandom 0
+pop temp 0
+push constant 13
+call Card.randRange 1
+push constant 1
+add
+pop this 0
+push static 0
+push constant 31
+call Math.multiply 2
+pop static 0
+push constant 4
+call Card.randRange 1
+push constant 1
+add
+pop this 1
+push pointer 0
+return
+function Card.safePoke 0
+push argument 0
+push constant 16383
+gt
+push argument 0
+push constant 24000
+lt
+and
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push argument 0
+push argument 1
+call Memory.poke 2
+pop temp 0
+label IF_FALSE0
+push constant 0
+return
+function Card.getMemoryAddress 0
+push constant 16384
+push argument 1
+push constant 32
+call Math.multiply 2
+add
+push argument 0
+push constant 16
+call Math.divide 2
+add
+return
+function Card.initRandom 0
+push static 0
+push constant 0
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 7181
+pop static 0
+label IF_FALSE0
+push constant 0
+return
+function Card.randRange 1
+push static 0
+push constant 8121
+add
+pop static 0
+push static 0
+push constant 13
+call Math.multiply 2
+pop static 0
+push static 0
+push constant 47
+add
+pop static 0
+push static 0
+push constant 0
+lt
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push static 0
+neg
+pop static 0
+label IF_FALSE0
+push static 0
+pop local 0
+label WHILE_EXP0
+push local 0
+push argument 0
+push constant 1
+sub
+gt
+not
+if-goto WHILE_END0
+push local 0
+push argument 0
+sub
+pop local 0
+goto WHILE_EXP0
+label WHILE_END0
+push local 0
+return
+function Card.get_value 0
+push argument 0
+pop pointer 0
+push this 0
+push constant 1
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 11
+return
+label IF_FALSE0
+push this 0
+push constant 10
+gt
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 10
+return
+label IF_FALSE1
+push this 0
+return
+function Card.get_suit 0
+push argument 0
+pop pointer 0
+push this 1
+return
+function Card.dispose 0
+push argument 0
+pop pointer 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function Card.erase 3
+push constant 0
+pop local 0
+label WHILE_EXP0
+push local 0
+push static 2
+lt
+not
+if-goto WHILE_END0
+push constant 0
+pop local 1
+label WHILE_EXP1
+push local 1
+push static 1
+push constant 16
+call Math.divide 2
+push constant 1
+add
+lt
+not
+if-goto WHILE_END1
+push argument 0
+push local 0
+push constant 32
+call Math.multiply 2
+add
+push local 1
+add
+pop local 2
+push local 2
+push constant 0
+call Card.safePoke 2
+pop temp 0
+push local 1
+push constant 1
+add
+pop local 1
+goto WHILE_EXP1
+label WHILE_END1
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+return
+function Card.drawCard 2
+push argument 0
+push constant 16384
+lt
+push argument 0
+push constant 24000
+gt
+or
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+return
+label IF_FALSE0
+push argument 0
+call Card.drawFrame 1
+pop temp 0
+push argument 0
+push static 3
+push constant 32
+call Math.multiply 2
+add
+pop local 0
+push argument 0
+push static 4
+push constant 32
+call Math.multiply 2
+add
+pop local 1
+push local 0
+push constant 16383
+gt
+push local 0
+push constant 24000
+lt
+and
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push local 0
+push argument 1
+call Card.drawValue 2
+pop temp 0
+label IF_FALSE1
+push local 1
+push constant 16383
+gt
+push local 1
+push constant 24000
+lt
+and
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push local 1
+push argument 2
+call Card.drawSuit 2
+pop temp 0
+label IF_FALSE2
+push constant 0
+return
+function Card.drawValue 0
+push argument 1
+push constant 1
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push argument 0
+call Card.drawA 1
+pop temp 0
+label IF_FALSE0
+push argument 1
+push constant 2
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push argument 0
+call Card.draw2 1
+pop temp 0
+label IF_FALSE1
+push argument 1
+push constant 3
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push argument 0
+call Card.draw3 1
+pop temp 0
+label IF_FALSE2
+push argument 1
+push constant 4
+eq
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push argument 0
+call Card.draw4 1
+pop temp 0
+label IF_FALSE3
+push argument 1
+push constant 5
+eq
+if-goto IF_TRUE4
+goto IF_FALSE4
+label IF_TRUE4
+push argument 0
+call Card.draw5 1
+pop temp 0
+label IF_FALSE4
+push argument 1
+push constant 6
+eq
+if-goto IF_TRUE5
+goto IF_FALSE5
+label IF_TRUE5
+push argument 0
+call Card.draw6 1
+pop temp 0
+label IF_FALSE5
+push argument 1
+push constant 7
+eq
+if-goto IF_TRUE6
+goto IF_FALSE6
+label IF_TRUE6
+push argument 0
+call Card.draw7 1
+pop temp 0
+label IF_FALSE6
+push argument 1
+push constant 8
+eq
+if-goto IF_TRUE7
+goto IF_FALSE7
+label IF_TRUE7
+push argument 0
+call Card.draw8 1
+pop temp 0
+label IF_FALSE7
+push argument 1
+push constant 9
+eq
+if-goto IF_TRUE8
+goto IF_FALSE8
+label IF_TRUE8
+push argument 0
+call Card.draw9 1
+pop temp 0
+label IF_FALSE8
+push argument 1
+push constant 10
+eq
+if-goto IF_TRUE9
+goto IF_FALSE9
+label IF_TRUE9
+push argument 0
+call Card.draw10 1
+pop temp 0
+label IF_FALSE9
+push argument 1
+push constant 11
+eq
+if-goto IF_TRUE10
+goto IF_FALSE10
+label IF_TRUE10
+push argument 0
+call Card.drawJ 1
+pop temp 0
+label IF_FALSE10
+push argument 1
+push constant 12
+eq
+if-goto IF_TRUE11
+goto IF_FALSE11
+label IF_TRUE11
+push argument 0
+call Card.drawQ 1
+pop temp 0
+label IF_FALSE11
+push argument 1
+push constant 13
+eq
+if-goto IF_TRUE12
+goto IF_FALSE12
+label IF_TRUE12
+push argument 0
+call Card.drawK 1
+pop temp 0
+label IF_FALSE12
+push constant 0
+return
+function Card.drawPattern 2
+push constant 0
+pop local 0
+push argument 0
+push constant 16384
+lt
+push argument 0
+push constant 24000
+gt
+or
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+return
+label IF_FALSE0
+label WHILE_EXP0
+push local 0
+push argument 2
+lt
+not
+if-goto WHILE_END0
+push argument 0
+push local 0
+push constant 32
+call Math.multiply 2
+add
+pop local 1
+push local 1
+push constant 16383
+gt
+push local 1
+push constant 23900
+lt
+and
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push local 1
+push constant 2
+add
+push local 0
+push argument 1
+add
+pop pointer 1
+push that 0
+push constant 4
+call Math.multiply 2
+call Memory.poke 2
+pop temp 0
+label IF_FALSE1
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+return
+function Card.drawFrame 1
+push constant 0
+pop local 0
+label WHILE_EXP0
+push local 0
+push static 5
+lt
+not
+if-goto WHILE_END0
+push argument 0
+push local 0
+add
+push constant 32767
+call Card.safePoke 2
+pop temp 0
+push argument 0
+push constant 32
+add
+push local 0
+add
+push constant 32767
+call Card.safePoke 2
+pop temp 0
+push argument 0
+push static 2
+push constant 1
+sub
+push constant 32
+call Math.multiply 2
+add
+push local 0
+add
+push constant 32767
+call Card.safePoke 2
+pop temp 0
+push argument 0
+push static 2
+push constant 2
+sub
+push constant 32
+call Math.multiply 2
+add
+push local 0
+add
+push constant 32767
+call Card.safePoke 2
+pop temp 0
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+pop local 0
+label WHILE_EXP1
+push local 0
+push static 2
+lt
+not
+if-goto WHILE_END1
+push argument 0
+push local 0
+push constant 32
+call Math.multiply 2
+add
+push constant 16384
+call Card.safePoke 2
+pop temp 0
+push argument 0
+push local 0
+push constant 32
+call Math.multiply 2
+add
+push static 5
+push constant 1
+sub
+add
+push constant 1
+call Card.safePoke 2
+pop temp 0
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP1
+label WHILE_END1
+push constant 0
+return
+function Card.drawSuit 0
+push argument 1
+push constant 1
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push argument 0
+call Card.drawHeart 1
+pop temp 0
+label IF_FALSE0
+push argument 1
+push constant 2
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push argument 0
+call Card.drawDiamond 1
+pop temp 0
+label IF_FALSE1
+push argument 1
+push constant 3
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push argument 0
+call Card.drawClub 1
+pop temp 0
+label IF_FALSE2
+push argument 1
+push constant 4
+eq
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push argument 0
+call Card.drawSpade 1
+pop temp 0
+label IF_FALSE3
+push constant 0
+return
+function Card.drawA 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 1984
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 7800
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 16382
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 14342
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 14342
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 14342
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.draw2 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 56
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 240
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 992
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 3968
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 16128
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 16382
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.draw3 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 56
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 56
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 1008
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 56
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.draw4 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 16382
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 56
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 56
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 56
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 56
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.draw5 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 16382
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 16128
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 16128
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 16128
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 16376
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 30
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.draw6 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 16128
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 16128
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 16376
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 14344
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.draw7 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 16382
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 56
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 112
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 448
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 896
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 1792
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 3584
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 7168
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.draw8 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.draw9 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 4088
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 56
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.draw10 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.drawJ 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 16382
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 448
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 448
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 448
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 448
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 448
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.drawQ 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 7480
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 7352
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 7736
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 4094
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.drawK 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 7352
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 7608
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 8064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 8064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 7608
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 7352
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 7224
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.drawHeart 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 3640
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 8190
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 16382
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 16382
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 16382
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 8188
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 4088
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 2032
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 992
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.drawDiamond 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 896
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 2032
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 4088
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 8188
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 16382
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 8188
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 4088
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 2032
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 896
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.drawClub 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 2032
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 2032
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 2032
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 896
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 3640
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 896
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 2032
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 2032
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 896
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.drawSpade 1
+push constant 9
+call Array.new 1
+pop local 0
+push constant 0
+push local 0
+add
+push constant 896
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push local 0
+add
+push constant 2032
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push local 0
+add
+push constant 4088
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push local 0
+add
+push constant 8188
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push local 0
+add
+push constant 16382
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push local 0
+add
+push constant 16382
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push local 0
+add
+push constant 2032
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push local 0
+add
+push constant 4064
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push local 0
+add
+push constant 2032
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push argument 0
+push local 0
+push constant 9
+call Card.drawPattern 3
+pop temp 0
+push constant 0
+return
+function Card.drawCardBack 1
+push argument 0
+call Card.drawFrame 1
+pop temp 0
+push constant 2
+pop local 0
+label WHILE_EXP0
+push local 0
+push static 2
+push constant 2
+sub
+lt
+not
+if-goto WHILE_END0
+push local 0
+push constant 1
+and
+push constant 0
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push argument 0
+push local 0
+push constant 32
+call Math.multiply 2
+add
+push constant 1
+add
+push constant 21845
+call Card.safePoke 2
+pop temp 0
+push argument 0
+push local 0
+push constant 32
+call Math.multiply 2
+add
+push constant 2
+add
+push constant 21845
+call Card.safePoke 2
+pop temp 0
+push argument 0
+push local 0
+push constant 32
+call Math.multiply 2
+add
+push constant 3
+add
+push constant 21845
+call Card.safePoke 2
+pop temp 0
+goto IF_END0
+label IF_FALSE0
+push argument 0
+push local 0
+push constant 32
+call Math.multiply 2
+add
+push constant 1
+add
+push constant 10922
+call Card.safePoke 2
+pop temp 0
+push argument 0
+push local 0
+push constant 32
+call Math.multiply 2
+add
+push constant 2
+add
+push constant 10922
+call Card.safePoke 2
+pop temp 0
+push argument 0
+push local 0
+push constant 32
+call Math.multiply 2
+add
+push constant 3
+add
+push constant 10922
+call Card.safePoke 2
+pop temp 0
+label IF_END0
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+return
