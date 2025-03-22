@@ -6,6 +6,8 @@ as allowed by the Creative Common Attribution-NonCommercial-ShareAlike 3.0
 Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
 """
 import typing
+import SymbolTable
+import VMWriter
 
 
 class CompilationEngine:
@@ -20,25 +22,23 @@ class CompilationEngine:
         :param input_stream: The input stream.
         :param output_stream: The output stream.
         """
-        self.const_indent = 0
         self.tokenizer = input_stream
         self.output_stream = output_stream
+        self.symbol_table = SymbolTable.SymbolTable()
+        self.vm_writer = VMWriter.VMWriter(output_stream)
+        self.current_name = ""
+        self.current_kind = ""
+        self.current_type = ""
+        self.label_counter = 0
 
     def compile_class(self) -> None:
         """Compiles a complete class."""
-        self.output_stream.write("<class>\n")
-        self.const_indent += 2
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n") #write class
-        self.tokenizer.advance()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-            "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n") #write className
-        self.tokenizer.advance()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-            "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n") #wrie {
-        self.tokenizer.advance()
+        self.label_counter = 0
+        self.symbol_table = SymbolTable.SymbolTable()
+        self.tokenizer.advance() #skip class
+        self.current_class = self.tokenizer.get_current_token()
+        self.tokenizer.advance() #skip class name
+        self.tokenizer.advance() #skip {
         while self.tokenizer.get_current_token() != '}':
             if self.tokenizer.get_current_token() == 'static' or self.tokenizer.get_current_token() == 'field':
                 self.compile_class_var_dec()
@@ -46,30 +46,23 @@ class CompilationEngine:
                 self.compile_subroutine()
             else:
                 break
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n") #write }
-        self.tokenizer.advance()
-        self.output_stream.write("</class>\n")
-        self.const_indent -= 2
+        self.tokenizer.advance() #skip }
         print("Compilation complete!")
 
     def compile_class_var_dec(self) -> None:
-        """Compiles a static declaration or a field declaration."""
-        self.output_stream.write(" " * self.const_indent + "<classVarDec>\n")
-        self.const_indent += 2
-        while self.tokenizer.get_current_token() != ';':
-            self.output_stream.write(" " * self.const_indent)
-            self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n")
-            self.tokenizer.advance()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-            "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-        self.const_indent -= 2
-        self.output_stream.write(" " * self.const_indent + "</classVarDec>\n")
+        kind = self.tokenizer.get_current_token()
+        kind = kind.upper()
         self.tokenizer.advance()
-        print("Class variable declaration complete!")
+        type = self.tokenizer.get_current_token()
+        self.tokenizer.advance()
 
-
-
+        while self.tokenizer.get_current_token() != ';':
+            var_name = self.tokenizer.get_current_token()
+            self.symbol_table.define(var_name, type, kind)
+            self.tokenizer.advance()
+            if self.tokenizer.get_current_token() == ',':
+                self.tokenizer.advance()
+        self.tokenizer.advance()
 
     def compile_subroutine(self) -> None:
         """
@@ -77,83 +70,74 @@ class CompilationEngine:
         You can assume that classes with constructors have at least one field,
         you will understand why this is necessary in project 11.
         """
-        self.output_stream.write(" " * self.const_indent + "<subroutineDec>\n")
-        self.const_indent += 2
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n") #write constructor/function/method
-        self.tokenizer.advance()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n") #write void/type
-        self.tokenizer.advance()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n") #write subroutineName
-        self.tokenizer.advance()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-                "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n") #write (
-        self.tokenizer.advance()
+        self.label_counter = 0
+        self.symbol_table.start_subroutine()
+        self.current_kind = self.tokenizer.get_current_token()
+        self.tokenizer.advance() #skip constructor/function/method
+        self.current_type = self.tokenizer.get_current_token()
+        self.tokenizer.advance() #skip void/int/char/boolean/className
+        self.current_name = self.tokenizer.get_current_token()
+        self.tokenizer.advance() #skip subroutine name
+        self.tokenizer.advance() #skip (
+        # expecting to see parameter list
         self.compile_parameter_list()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-                "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n") #write )
-        self.tokenizer.advance()
+        self.tokenizer.advance() #skip )
         if self.tokenizer.get_current_token() == '{':
-            self.output_stream.write(" " * self.const_indent + "<subroutineBody>\n")
-            self.const_indent += 2
-            self.output_stream.write(" " * self.const_indent)
-            self.output_stream.write(
-                "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n") #write {
-            self.tokenizer.advance()
+            self.tokenizer.advance() #skip {
+            n_locals = 0
             while self.tokenizer.get_current_token() == "var":
-                self.compile_var_dec()
-            self.compile_statements()
-            self.output_stream.write(" " * self.const_indent)
-            self.output_stream.write(
-            "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n") #write }
-            self.const_indent -= 2
-            self.output_stream.write(" " * self.const_indent + "</subroutineBody>\n")
-        self.const_indent -= 2
-        self.output_stream.write(" " * self.const_indent + "</subroutineDec>\n")
-        self.tokenizer.advance()
-        print("Subroutine declaration complete!")
+                vars_in_dec = self.compile_var_dec()
+                n_locals += vars_in_dec
+            self.vm_writer.write_function(f"{self.current_class}.{self.current_name}", n_locals)
 
+            # If it's a method, set up 'this'
+            if self.current_kind == 'method':
+                self.vm_writer.write_push('argument', 0)
+                self.vm_writer.write_pop('pointer', 0)
+            # If it's a constructor, allocate memory
+            elif self.current_kind == 'constructor':
+                fields_count = self.symbol_table.var_count('FIELD')
+                self.vm_writer.write_push('constant', fields_count)
+                self.vm_writer.write_call('Memory.alloc', 1)
+                self.vm_writer.write_pop('pointer', 0)
+            self.compile_statements()
+        self.tokenizer.advance() #skip }
 
     def compile_parameter_list(self) -> None:
         """Compiles a (possibly empty) parameter list, not including the 
         enclosing "()".
         """
-        self.output_stream.write(" " * self.const_indent + "<parameterList>\n")
-        self.const_indent += 2
+        if self.current_kind == 'method':
+            self.symbol_table.define("this", self.current_class, "ARG")
         while self.tokenizer.get_current_token() != ')':
-            self.output_stream.write(" " * self.const_indent)
-            self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n")
-            self.tokenizer.advance()
-        self.const_indent -= 2
-        self.output_stream.write(" " * self.const_indent + "</parameterList>\n")
-        print("Parameter list complete!")
+            self.current_type = self.tokenizer.get_current_token()
+            self.tokenizer.advance()  # skip type
+            var_name = self.tokenizer.get_current_token()
+            self.symbol_table.define(var_name, self.current_type, "ARG")
+            self.tokenizer.advance()  # skip argName
+            if self.tokenizer.get_current_token() == ',':
+                self.tokenizer.advance()  # skip ,
 
     def compile_var_dec(self) -> None:
         """Compiles a var declaration."""
-        self.output_stream.write(" " * self.const_indent + "<varDec>\n")
-        self.const_indent += 2
+        self.tokenizer.advance()  # skip var
+        self.current_type = self.tokenizer.get_current_token()
+        self.tokenizer.advance()  # skip type
+        n_locals = 0
         while self.tokenizer.get_current_token() != ';':
-            self.output_stream.write(" " * self.const_indent)
-            self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n")
-            self.tokenizer.advance()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-            "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n") #write ;
-        self.const_indent -= 2
-        self.output_stream.write(" " * self.const_indent + "</varDec>\n")
-        self.tokenizer.advance()
-        print("Variable declaration complete!")
+            n_locals += 1
+            var_name = self.tokenizer.get_current_token()
+            self.symbol_table.define(var_name, self.current_type, "VAR")
+            self.tokenizer.advance()  # skip varName
+            if self.tokenizer.get_current_token() == ',':
+                self.tokenizer.advance()  # skip ,
+        self.tokenizer.advance()  # skip ;
+        return n_locals
 
     def compile_statements(self) -> None:
         """Compiles a sequence of statements, not including the enclosing 
         "{}".
         """
-        self.output_stream.write(" " * self.const_indent + "<statements>\n")
-        self.const_indent += 2
         while self.tokenizer.token_type() == 'keyword':
             if self.tokenizer.get_current_token() == 'let':
                 self.compile_let()
@@ -165,268 +149,247 @@ class CompilationEngine:
                 self.compile_do()
             elif self.tokenizer.get_current_token() == 'return':
                 self.compile_return()
-        self.const_indent -= 2
-        self.output_stream.write(" " * self.const_indent + "</statements>\n")
-        print("Statements complete!")
 
     def compile_do(self) -> None:
         """Compiles a do statement."""
-        self.output_stream.write(" " * self.const_indent + "<doStatement>\n")
-        self.const_indent += 2
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n") #write do
-        self.tokenizer.advance()
+        self.tokenizer.advance() #skip do
         self.compile_subroutine_call() #subroutine call
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-            "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")  # write ;
-        self.tokenizer.advance()
-        self.const_indent -= 2
-        self.output_stream.write(" " * self.const_indent + "</doStatement>\n")
-        print("Do statement complete!")
+        self.vm_writer.write_pop("temp", 0)
+        self.tokenizer.advance() #skip ;
 
     def compile_let(self) -> None:
         """Compiles a let statement."""
-        self.output_stream.write(" " * self.const_indent + "<letStatement>\n")
-        self.const_indent += 2
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n") #write let
-        self.tokenizer.advance()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n") #write varName
-        self.tokenizer.advance()
+        self.tokenizer.advance() #skip let
+        var_name = self.tokenizer.get_current_token()
+        self.tokenizer.advance() #skip varName
+        kind = self.symbol_table.kind_of(var_name)
+        index = self.symbol_table.index_of(var_name)
+        vm_segment = self.get_vm_segment(kind)
         if self.tokenizer.get_current_token() == '[':
-            self.output_stream.write(" " * self.const_indent)
-            self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n") #write [
-            self.tokenizer.advance()
+            self.vm_writer.write_push(vm_segment, index)
+            self.tokenizer.advance() #skip [
+            self.compile_expression() #expression
+            self.vm_writer.write_arithmetic('add')
+            self.tokenizer.advance() #skip ]
+            self.tokenizer.advance() #skip =
+            self.compile_expression() #expression
+            self.vm_writer.write_pop('temp', 0)
+            self.vm_writer.write_pop('pointer', 1)
+            self.vm_writer.write_push('temp', 0)
+            self.vm_writer.write_pop('that', 0)
+        else:
+            self.tokenizer.advance() #skip =
             self.compile_expression()
-            self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n") #write ]
-            self.tokenizer.advance()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-            "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n") #write =
-        self.tokenizer.advance()
-        self.compile_expression()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-            "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n") #write ;
-        self.tokenizer.advance()
-        self.const_indent -= 2
-        self.output_stream.write(" " * self.const_indent + "</letStatement>\n")
-        print("Let statement complete!")
-
+            self.vm_writer.write_pop(vm_segment, index)
+        self.tokenizer.advance() #skip ;
 
     def compile_while(self) -> None:
         """Compiles a while statement."""
-        print("ENTER WHILE STATEMENT!")
-        self.output_stream.write(" " * self.const_indent + "<whileStatement>\n")
-        self.const_indent += 2
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n") #write while
-        self.tokenizer.advance()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n") #write (
-        self.tokenizer.advance()
-        print("first token og expression", self.tokenizer.get_current_token())
+        label_exp = f"WHILE_EXP{self.label_counter}"
+        label_end = f"WHILE_END{self.label_counter}"
+        self.label_counter += 1
+
+        self.vm_writer.write_label(label_exp)
+
+        self.tokenizer.advance()  # skip while
+        self.tokenizer.advance()  # skip (
         self.compile_expression()
-        print("token after expression", self.tokenizer.get_current_token())
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n") #write )
-        self.tokenizer.advance()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-            "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n") #write {
-        self.tokenizer.advance()
-        print("first token in while statement", self.tokenizer.get_current_token())
+        self.vm_writer.write_arithmetic('not')  # negate condition
+        self.vm_writer.write_if(label_end)
+
+        self.tokenizer.advance()  # skip )
+        self.tokenizer.advance()  # skip {
         self.compile_statements()
-        print("token after statements in while", self.tokenizer.get_current_token())
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-            "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n") #write }
-        print("last token written in while statement", self.tokenizer.get_current_token())
-        self.tokenizer.advance()
-        print("token out of while statement", self.tokenizer.get_current_token())
-        self.output_stream.write(" " * self.const_indent + "</whileStatement>\n")
-        self.const_indent -= 2
-        print("While statement complete!")
+
+        self.vm_writer.write_goto(label_exp)
+        self.vm_writer.write_label(label_end)
+
+        self.tokenizer.advance()  # skip }
 
 
     def compile_return(self) -> None:
         """Compiles a return statement."""
-        self.output_stream.write(" " * self.const_indent + "<returnStatement>\n")
-        self.const_indent += 2
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n") #write return
-        self.tokenizer.advance()
-        if self.tokenizer.get_current_token() != ';':
+        self.tokenizer.advance() #skip return
+        if self.tokenizer.get_current_token() == ';':
+            self.vm_writer.write_push('constant', 0)
+        else:
             self.compile_expression()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-            "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-        self.tokenizer.advance()
-        self.const_indent -= 2
-        self.output_stream.write(" " * self.const_indent + "</returnStatement>\n")
-        print("Return statement complete!")
+        self.tokenizer.advance() #skip ;
+        self.vm_writer.write_return()
 
     def compile_if(self) -> None:
-        """Compiles a if statement, possibly with a trailing else clause."""
-        self.output_stream.write(" " * self.const_indent + "<ifStatement>\n")
-        self.const_indent +=2
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n")
-        self.tokenizer.advance()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n")
-        self.tokenizer.advance()
+        """Compiles a if statement."""
+        label_true = f"IF_TRUE{self.label_counter}"
+        label_false = f"IF_FALSE{self.label_counter}"
+        label_end = f"IF_END{self.label_counter}"
+        self.label_counter += 1
+
+        self.tokenizer.advance()  # skip if
+        self.tokenizer.advance()  # skip (
         self.compile_expression()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n")
-        self.tokenizer.advance()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-            "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-        self.tokenizer.advance()
+
+        self.vm_writer.write_if(label_true)
+        self.vm_writer.write_goto(label_false)
+        self.vm_writer.write_label(label_true)
+
+        self.tokenizer.advance()  # skip )
+        self.tokenizer.advance()  # skip {
         self.compile_statements()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-            "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-        self.tokenizer.advance()
+        self.tokenizer.advance()  # skip }
+
+        self.vm_writer.write_goto(label_end)
+        self.vm_writer.write_label(label_false)
+
         if self.tokenizer.get_current_token() == 'else':
-            self.output_stream.write(" " * self.const_indent)
-            self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n")
-            self.tokenizer.advance()
-            self.output_stream.write(" " * self.const_indent)
-            self.output_stream.write(
-                "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-            self.tokenizer.advance()
+            self.tokenizer.advance()  # skip else
+            self.tokenizer.advance()  # skip {
             self.compile_statements()
-            self.output_stream.write(" " * self.const_indent)
-            self.output_stream.write(
-                "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-            self.tokenizer.advance()
-        self.const_indent -= 2
-        self.output_stream.write(" " * self.const_indent + "</ifStatement>\n")
-        print("If statement complete!")
+            self.tokenizer.advance()  # skip }
+
+        self.vm_writer.write_label(label_end)
+
 
     def compile_expression(self) -> None:
         """Compiles an expression."""
-        op = ['+', '-', '*', '/', '&amp;', '|', '&lt;', '&gt;', '=','^','#']
-        self.output_stream.write(" " * self.const_indent + "<expression>\n")
-        self.const_indent += 2
+        op = {'+':'add', '-':'sub', '*':
+        'call Math.multiply 2', '/':'call Math.divide 2', '&amp;': 'and', '|':'or', '&lt;':'lt', '&gt;':'gt', '=':'eq','^':'shift left','#':'shift right'}
         self.compile_term()
         while self.tokenizer.get_current_token() in op:
-            self.output_stream.write(" " * self.const_indent)
-            self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n") #write op
-            self.tokenizer.advance()
+            command = op[self.tokenizer.get_current_token()]
+            self.tokenizer.advance() #skip operator
             self.compile_term()
-        self.const_indent -= 2
-        self.output_stream.write(" " * self.const_indent + "</expression>\n")
-        print("Expression complete!")
+            if command.startswith('call'):
+                self.vm_writer.write_call(command.split()[1], int(command.split()[2])) #call Math.multiply 2
+            else:
+                self.vm_writer.write_arithmetic(command)
 
     def compile_term(self) -> None:
-        self.output_stream.write(" " * self.const_indent + "<term>\n")
-        self.const_indent += 2
-
         # Handle unary operators
-        if self.tokenizer.get_current_token() in ['-', '~','^,#']:
-            self.output_stream.write(" " * self.const_indent)
-            self.output_stream.write(
-                "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-            self.tokenizer.advance()
+        if self.tokenizer.get_current_token() in ['-', '~', '^', '#']:
+            command = self.tokenizer.get_current_token()
+            self.tokenizer.advance()  # skip unary operator
             self.compile_term()
+            if command == '-':
+                self.vm_writer.write_arithmetic('neg')
+            elif command == '~':
+                self.vm_writer.write_arithmetic('not')
+            elif command == '^':
+                self.vm_writer.write_arithmetic('shift left')
+            elif command == '#':
+                self.vm_writer.write_arithmetic('shift right')
 
         # Handle parentheses expression
         elif self.tokenizer.get_current_token() == '(':
-            self.output_stream.write(" " * self.const_indent)
-            self.output_stream.write(
-                "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-            self.tokenizer.advance()
+            self.tokenizer.advance()  # skip (
             self.compile_expression()
-            self.output_stream.write(" " * self.const_indent)
-            self.output_stream.write(
-                "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-            self.tokenizer.advance()
+            self.tokenizer.advance()  # skip )
 
         # Handle identifier cases (varName, array, subroutineCall)
         elif self.tokenizer.token_type() == "identifier":
             if self.tokenizer.get_next_token() in ['.', '(']:  # subroutineCall
                 self.compile_subroutine_call()
             elif self.tokenizer.get_next_token() == '[':  # array
-                self.output_stream.write(" " * self.const_indent)
-                self.output_stream.write(
-                    "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-                self.tokenizer.advance()
-                self.output_stream.write(" " * self.const_indent)
-                self.output_stream.write(
-                    "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-                self.tokenizer.advance()
+                kind = self.symbol_table.kind_of(self.tokenizer.get_current_token())
+                kind = self.get_vm_segment(kind)
+                index = self.symbol_table.index_of(self.tokenizer.get_current_token())
+                self.vm_writer.write_push(kind, index)
+                self.tokenizer.advance()  # skip ArrayName
+                self.tokenizer.advance()  # skip [
                 self.compile_expression()
-                self.output_stream.write(" " * self.const_indent)
-                self.output_stream.write(
-                    "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-                self.tokenizer.advance()
+                self.vm_writer.write_arithmetic('add')
+                self.vm_writer.write_pop('pointer', 1)
+                self.vm_writer.write_push('that', 0)
+                self.tokenizer.advance()  # skip ]
             else:  # varName
-                self.output_stream.write(" " * self.const_indent)
-                self.output_stream.write(
-                    "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-                self.tokenizer.advance()
+                kind = self.symbol_table.kind_of(self.tokenizer.get_current_token())
+                kind = self.get_vm_segment(kind)
+                index = self.symbol_table.index_of(self.tokenizer.get_current_token())
+                self.vm_writer.write_push(kind, index)
+                self.tokenizer.advance()  # skip varName
 
         # Handle constants
         else:
-            self.output_stream.write(" " * self.const_indent)
-            if self.tokenizer.token_type() == "stringConstant":
-                self.output_stream.write(
-                    "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token()[1:-1] + "  </" + self.tokenizer.token_type() + ">" + "\n")
-            else:
-                self.output_stream.write(
-                    "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
+            if self.tokenizer.token_type() == "integerConstant":
+                self.vm_writer.write_push('constant', int(self.tokenizer.get_current_token()))
+            elif self.tokenizer.token_type() == "stringConstant":
+                string = self.tokenizer.get_current_token().strip('"')
+                self.vm_writer.write_push('constant', len(string))
+                self.vm_writer.write_call('String.new', 1)
+                for char in string:
+                    self.vm_writer.write_push('constant', ord(char))
+                    self.vm_writer.write_call('String.appendChar', 2)
+            elif self.tokenizer.get_current_token() == 'true':
+                self.vm_writer.write_push('constant', 0)
+                self.vm_writer.write_arithmetic('not')
+            elif self.tokenizer.get_current_token() == 'false' or self.tokenizer.get_current_token() == 'null':
+                self.vm_writer.write_push('constant', 0)
+            elif self.tokenizer.get_current_token() == 'this':
+                self.vm_writer.write_push('pointer', 0)
             self.tokenizer.advance()
-
-        self.const_indent -= 2
-        self.output_stream.write(" " * self.const_indent + "</term>\n")
-        print("Term complete!")
-
-
 
     def compile_subroutine_call(self) -> None:
         """Compiles a subroutine call."""
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n")
-        self.tokenizer.advance()
-        if self.tokenizer.get_current_token() == '.':
-            self.output_stream.write(" " * self.const_indent)
-            self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n")
-            self.tokenizer.advance()
-            self.output_stream.write(" " * self.const_indent)
-            self.output_stream.write("<" + self.tokenizer.token_type() + ">  "+ self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() +">" + "\n")
-            self.tokenizer.advance()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-            "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-        self.tokenizer.advance()
-        self.compile_expression_list()
-        self.output_stream.write(" " * self.const_indent)
-        self.output_stream.write(
-            "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-        self.tokenizer.advance()
+        n_args = 0
+
+        if self.tokenizer.get_next_token() == '.':  # className.subroutineName or varName.methodName
+            class_name = self.tokenizer.get_current_token()
+            var_type = self.symbol_table.type_of(class_name)
+
+            if var_type:  # Method call on object (like game.run())
+                kind = self.get_vm_segment(self.symbol_table.kind_of(class_name))
+                self.vm_writer.write_push(kind, self.symbol_table.index_of(class_name))
+                class_name = var_type
+                n_args = 1  # Count 'this'
+            self.tokenizer.advance()  # skip className/varName
+            self.tokenizer.advance()  # skip .
+            subroutine_name = self.tokenizer.get_current_token()
+            self.tokenizer.advance()  # skip subroutineName
+        else:  # Method call in same class (like draw())
+            self.vm_writer.write_push("pointer", 0)  # push this
+            class_name = self.current_class
+            subroutine_name = self.tokenizer.get_current_token()
+            self.tokenizer.advance()  # skip subroutineName
+            n_args = 1  # Count 'this'
+
+        self.tokenizer.advance()  # skip (
+        n_args += self.compile_expression_list()  # Add normal arguments
+        self.vm_writer.write_call(f"{class_name}.{subroutine_name}", n_args)
+        self.tokenizer.advance()  # skip )
 
     def compile_expression_list(self) -> None:
         """Compiles a (possibly empty) comma-separated list of expressions."""
-        self.output_stream.write(" " * self.const_indent + "<expressionList>\n")
-        self.const_indent += 2
+        n_args = 0
         if self.tokenizer.get_current_token() == ')':
-            self.const_indent -= 2
-            self.output_stream.write(" " * self.const_indent + "</expressionList>\n")
-            return
+            return n_args
         while True:
             self.compile_expression()
+            n_args += 1
             if self.tokenizer.get_current_token() == ')':
                 break
             if self.tokenizer.get_current_token() == ',':
-                self.output_stream.write(" " * self.const_indent)
-                self.output_stream.write(
-                    "<" + self.tokenizer.token_type() + ">  " + self.tokenizer.get_current_token() + "  </" + self.tokenizer.token_type() + ">" + "\n")
-                self.tokenizer.advance()
-        self.const_indent -= 2
-        self.output_stream.write(" " * self.const_indent + "</expressionList>\n")
+                self.tokenizer.advance() #skip ,
+        return n_args
 
+    def get_vm_segment(self, kind: str) -> str:
+        """
+        Converts symbol table kinds to VM segments.
+        """
+        # Handle empty string or None case
+        if not kind:  # This catches both None and empty string
+            return "this"  # Default to 'this' for field access
+
+        segment_map = {
+            "VAR": "local",
+            "ARG": "argument",
+            "FIELD": "this",
+            "STATIC": "static"
+        }
+
+        # Convert to uppercase and map
+        kind_upper = kind.upper()
+        result = segment_map.get(kind_upper)
+
+        if result is None:
+            return kind.lower()
+
+        return result

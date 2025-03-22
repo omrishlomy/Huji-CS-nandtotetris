@@ -3,7 +3,7 @@
 ## Why do we need this file?
 # We want our users to have a simple API to run the project. 
 # So, we need a "wrapper" that will hide all  details to do so,
-# thus enabling our users to simply type 'JackAnalyzer <path>' in order to use it.
+# thus enabling our users to simply type 'JackCompiler <path>' in order to use it.
 
 ## What are makefiles?
 # This is a sample makefile. 
@@ -26,7 +26,7 @@
 ## How are rules defined?
 # The following line is a rule declaration: 
 # all:
-# 	chmod a+x JackAnalyzer
+# 	chmod a+x JackCompiler
 
 # A general rule looks like this:
 # rule_name: prerequisite1 prerequisite2 prerequisite3 prerequisite4 ...
